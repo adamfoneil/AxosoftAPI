@@ -7,9 +7,13 @@ using AxosoftAPI.NET.Models;
 
 namespace AxosoftAPI.NET.Core
 {
+	public delegate void TraceHandler(string verb, string resource, object contentOrId, IDictionary<string, object> parameters);
+
 	public class BaseRequest
 	{
 		protected IProxy client;
+
+		public TraceHandler TraceCallback;
 
 		public BaseRequest(IProxy client)
 		{
@@ -40,28 +44,36 @@ namespace AxosoftAPI.NET.Core
 		{
 			var request = BuildRequest(resource, parameters);
 
-			return request.Get<R, ErrorResponse>();
+			var result = request.Get<R, ErrorResponse>();
+			InvokeTrace("get", resource, null, parameters);
+			return result;
 		}
 
 		public virtual R Post<R>(string resource, object content, IDictionary<string, object> parameters = null)
 		{
 			var request = BuildRequest(resource, parameters);
 
-			return request.Post<R, ErrorResponse>(content);
+			var result = request.Post<R, ErrorResponse>(content);
+			InvokeTrace("post", resource, content, parameters);
+			return result;
 		}
 
 		public virtual object Delete(string resource, int id, IDictionary<string, object> parameters = null)
 		{
 			var request = BuildRequest(string.Format("{0}/{1}", resource, id), parameters);
 
-			return request.Delete<object, ErrorResponse>();
+			var result = request.Delete<object, ErrorResponse>();
+			InvokeTrace("delete", resource, id, parameters);
+			return result;
 		}
 
 		public virtual object Delete(string resource, IDictionary<string, object> parameters = null)
 		{
 			var request = BuildRequest(string.Format("{0}", resource), parameters);
 
-			return request.Delete<object, ErrorResponse>();
+			var result = request.Delete<object, ErrorResponse>();
+			InvokeTrace("delete", resource, null, parameters);
+			return result;
 		}
 
 		public virtual HttpWebRequest BuildRequest(string resource, IDictionary<string, object> parameters = null)
@@ -83,6 +95,11 @@ namespace AxosoftAPI.NET.Core
 
 			// Return http request 
 			return request;
+		}
+
+		private void InvokeTrace(string verb, string resource, object contentOrId, IDictionary<string, object> parameters)
+		{
+			TraceCallback?.Invoke(verb, resource, contentOrId, parameters);
 		}
 	}
 }

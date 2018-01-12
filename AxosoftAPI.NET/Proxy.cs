@@ -15,7 +15,7 @@ namespace AxosoftAPI.NET
 
 		private BaseRequest baseRequest;
 
-		#endregion
+		#endregion		
 
 		#region Public Properties
 
@@ -199,7 +199,13 @@ namespace AxosoftAPI.NET
 
 		#endregion
 
-		#region Generic API calls
+		#region Generic API calls		
+
+		public TraceHandler TraceCallback
+		{
+			get { return baseRequest.TraceCallback; }
+			set { baseRequest.TraceCallback = value; }
+		}
 
 		public HttpWebRequest BuildRequest(string resource, IDictionary<string, object> parameters = null)
 		{
